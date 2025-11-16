@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nelavista AGENT Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        label {
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1666c1;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nelavista AGENT Demo</h1>
+    <div class="container">
+        <h2>Run a Task</h2>
+        <label for="taskInput">Enter Task Description:</label>
+        <textarea id="taskInput" rows="3" placeholder="Describe your task..."></textarea>
+        <button onclick="runAgent()">Run Agent</button>
+        <h3>Agent Output:</h3>
+        <pre id="agentOutput">Nothing yet.</pre>
+
+        <hr>
+
+        <h2>Generate Story</h2>
+        <label for="storyTaskInput">Task:</label>
+        <input type="text" id="storyTaskInput" placeholder="Task name">
+        <label for="storyInfraInput">Infrastructure (JSON format):</label>
+        <textarea id="storyInfraInput" rows="3" placeholder='{"resources":["Lambda Function","API Gateway Endpoint","S3 Bucket"]}'></textarea>
+        <label for="storyExecutionInput">Execution (JSON format):</label>
+        <textarea id="storyExecutionInput" rows="3" placeholder='{"message":"Deployed 3 resources successfully."}'></textarea>
+        <button onclick="generateStory()">Generate Story</button>
+        <h3>Story Output:</h3>
+        <pre id="storyOutput">Nothing yet.</pre>
+    </div>
+
+    <script>
+        async function runAgent() {
+            const task = document.getElementById("taskInput").value;
+
+            const response = await fetch("/agent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: task })
+            });
+
+            const data = await response.json();
+            document.getElementById("agentOutput").textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function generateStory() {
+            const task = document.getElementById("storyTaskInput").value;
+            const infra = JSON.parse(document.getElementById("storyInfraInput").value);
+            const execution = JSON.parse(document.getElementById("storyExecutionInput").value);
+
+            const response = await fetch("/generate_story", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ task, infra, execution })
+            });
+
+            const data = await response.json();
+            document.getElementById("storyOutput").textContent = data.story;
+        }
+    </script>
+</body>
+</html>
