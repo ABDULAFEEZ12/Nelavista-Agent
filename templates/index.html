@@ -14,16 +14,10 @@
         --fail-color: #f44336;
         --warning-color: #ff9800;
     }
-    [data-theme="dark"] {
-        --background-color: #181818;
-        --text-color: #f0f0f0;
-        --card-bg: #242424;
-    }
     * { box-sizing: border-box; }
     body { font-family: Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); margin:0; }
     header { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background-color: var(--primary-color); color:#fff;}
     header h1 { margin:0; font-size:24px; }
-    .theme-toggle { cursor:pointer; background:#fff; color:var(--primary-color); border:none; padding:8px 12px; border-radius:5px; font-weight:bold;}
     .container { max-width: 1000px; margin: 20px auto; padding: 20px;}
     .card { background: var(--card-bg); padding:20px; border-radius:10px; margin-bottom:20px; box-shadow: 0 0 15px rgba(0,0,0,0.1);}
     h2 { color: var(--primary-color); margin-top:0;}
@@ -70,10 +64,9 @@
     @media(max-width:600px){ .container{ padding:10px;} .node {width:80px; height:50px; font-size:12px;} }
 </style>
 </head>
-<body data-theme="light">
+<body>
 <header>
     <h1>Nelavista AGENT Demo</h1>
-    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
 </header>
 
 <div class="sidebar" id="sidebar">
@@ -119,9 +112,6 @@
 <script>
 let history = [];
 
-function toggleTheme() {
-    document.body.dataset.theme = document.body.dataset.theme === "light" ? "dark" : "light";
-}
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
 async function runAgent() {
@@ -141,7 +131,6 @@ async function runAgent() {
     queue.textContent = task;
     diagram.appendChild(queue);
 
-    // Draw arrows between nodes
     const lambda = diagram.querySelector(".lambda");
     const api = diagram.querySelector(".api");
     const s3 = diagram.querySelector(".s3");
@@ -163,7 +152,6 @@ async function runAgent() {
         div.classList.add("resource","pending");
         resourceDiv.appendChild(div);
 
-        // Animate arrow
         if(i===0) drawArrow(lambda, api);
         if(i===1) drawArrow(api, s3);
 
@@ -172,7 +160,6 @@ async function runAgent() {
         div.classList.remove("pending"); div.classList.add("success");
         executed_resources.push(res);
 
-        // Burst animation
         const burst = document.createElement("div");
         burst.className = "burst";
         burst.style.left = div.offsetLeft + "px";
