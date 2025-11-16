@@ -1,139 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelavista AGENT Demo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            padding: 20px;
-            margin: 0;
-        }
-        h1, h2, h3 {
-            text-align: center;
-            color: #1a73e8;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto 40px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-family: monospace;
-        }
-        button {
-            background-color: #1a73e8;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-        button:hover {
-            background-color: #1666c1;
-        }
-        pre {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            max-height: 300px;
-        }
-        .task-card {
-            background: #eef5ff;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 5px solid #1a73e8;
-            animation: fadeIn 0.5s ease;
-        }
-        .task-card.success { border-left-color: #28a745; }
-        .task-card.failed { border-left-color: #dc3545; }
-        .resource-status {
-            display: inline-block;
-            padding: 3px 8px;
-            margin: 2px;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 12px;
-        }
-        .resource-pending { background-color: #ffc107; }
-        .resource-success { background-color: #28a745; }
-        .resource-failed { background-color: #dc3545; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nelavista AGENT Demo</title>
+<style>
+    :root {
+        --primary-color: #1a73e8;
+        --background-color: #f4f4f9;
+        --text-color: #333;
+        --card-bg: #fff;
+        --success-color: #4caf50;
+        --fail-color: #f44336;
+        --warning-color: #ff9800;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background-color: var(--background-color); color: var(--text-color); margin:0; }
+    header { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background-color: var(--primary-color); color:#fff;}
+    header h1 { margin:0; font-size:24px; }
+    .container { max-width: 1000px; margin: 20px auto; padding: 20px;}
+    .card { background: var(--card-bg); padding:20px; border-radius:10px; margin-bottom:20px; box-shadow: 0 0 15px rgba(0,0,0,0.1);}
+    h2 { color: var(--primary-color); margin-top:0;}
+    label { font-weight:bold;}
+    input, textarea { width:100%; padding:10px; margin-top:5px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc; background-color: var(--background-color); color: var(--text-color);}
+    button { background-color: var(--primary-color); color:#fff; border:none; padding:12px 20px; border-radius:5px; cursor:pointer; font-size:16px; margin-right:10px;}
+    button:hover { background-color: #1666c1; }
+    pre { background: #f0f0f0; padding:10px; border-radius:5px; overflow-x:auto; max-height:300px;}
+    .resource-status { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .resource { padding:5px 10px; border-radius:5px; color:#fff; font-weight:bold; animation: deployAnimation 0.5s ease forwards;}
+    .success { background-color: var(--success-color); }
+    .fail { background-color: var(--fail-color); }
+    .pending { background-color: var(--warning-color); }
+    @keyframes deployAnimation { 0%{transform: translateY(-20px); opacity:0;} 100%{transform: translateY(0); opacity:1;} }
 
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #ff0;
-            animation: fall 3s linear infinite;
-            opacity: 0.8;
-        }
+    /* Sidebar */
+    .sidebar { position:fixed; top:0; right:-250px; width:250px; height:100%; background: var(--card-bg); box-shadow:-2px 0 5px rgba(0,0,0,0.3); padding:20px; transition:right 0.3s; z-index:100;}
+    .sidebar.open { right:0; }
+    .sidebar h3 { margin-top:0; color: var(--primary-color);}
+    .sidebar-toggle { position:fixed; top:50%; right:0; transform:translateY(-50%); background:var(--primary-color); color:#fff; padding:8px 12px; border-radius:5px 0 0 5px; cursor:pointer; z-index:101; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fall {
-            0% { transform: translateY(-10px) rotate(0deg); }
-            100% { transform: translateY(100vh) rotate(360deg); }
-        }
+    /* Story */
+    .story-output { white-space: pre-wrap; font-family: "Courier New", Courier, monospace; background: #e8e8e8; padding:10px; border-radius:5px; max-height:300px; overflow-y:auto; animation:typewriter 1s steps(40) forwards;}
+    @keyframes typewriter { from{width:0;} to{width:100%;} }
 
-        /* Mobile-friendly adjustments */
-        @media(max-width: 700px) {
-            .container { padding: 15px; }
-            button { width: 100%; margin-bottom: 10px; }
-        }
-    </style>
+    /* Interactive Diagram */
+    #diagram { width:100%; height:300px; border:1px solid #ccc; margin-top:15px; border-radius:10px; background: #f9f9f9; position:relative; overflow:hidden;}
+    .node { position:absolute; width:120px; height:60px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; transition: all 0.3s; }
+    .lambda { background: #ff9800; top: 50px; left: 50px; }
+    .api { background: #1a73e8; top: 50px; right: 50px; }
+    .s3 { background: #4caf50; bottom: 50px; left: calc(50% - 60px); }
+
+    .task-queue { position:absolute; top:-50px; left:50%; transform:translateX(-50%); background: var(--primary-color); color:#fff; padding:5px 10px; border-radius:5px; animation: queueMove 1s linear forwards; }
+    @keyframes queueMove { 0%{ top:-50px; opacity:0;} 50%{ top:120px; opacity:1;} 100%{ top:50px; opacity:1;} }
+
+    /* Arrows */
+    .arrow { position:absolute; width:2px; background: var(--text-color); animation: drawArrow 0.5s forwards; }
+    @keyframes drawArrow { from{height:0;} to{height:100px;} }
+
+    /* Confetti burst */
+    .burst { position:absolute; width:10px; height:10px; border-radius:50%; background: var(--success-color); animation: burstAnim 0.6s ease forwards; }
+    @keyframes burstAnim { 0%{opacity:1; transform:scale(0);} 50%{transform:scale(1.5);} 100%{opacity:0; transform:scale(0);} }
+
+    @media(max-width:600px){ .container{ padding:10px;} .node {width:80px; height:50px; font-size:12px;} }
+</style>
 </head>
 <body>
+<header>
     <h1>Nelavista AGENT Demo</h1>
+</header>
 
-    <div class="container">
-        <h2>Agent Settings</h2>
-        <label for="speed">Simulation Speed:</label>
-        <select id="speed">
-            <option value="fast">Fast</option>
-            <option value="normal" selected>Normal</option>
-            <option value="slow">Slow</option>
-        </select>
-        <label><input type="checkbox" id="voiceNotify"> Voice Notifications</label>
-    </div>
+<div class="sidebar" id="sidebar">
+    <h3>Agent Settings</h3>
+    <label>Simulation Speed:</label>
+    <input type="range" id="speedRange" min="0.1" max="2" step="0.1" value="1">
+    <label><input type="checkbox" id="voiceNotify"> Voice Notifications</label>
+</div>
+<div class="sidebar-toggle" onclick="toggleSidebar()">⚙️ Settings</div>
 
-    <div class="container">
+<div class="container">
+    <div class="card">
         <h2>Run a Task</h2>
         <label for="taskInput">Enter Task Description:</label>
         <textarea id="taskInput" rows="3" placeholder="Describe your task..."></textarea>
         <button onclick="runAgent()">Run Agent</button>
-
         <h3>Task Queue & Resource Status:</h3>
-        <div id="taskQueue"></div>
-
+        <div id="diagram">
+            <div class="node lambda">Lambda</div>
+            <div class="node api">API Gateway</div>
+            <div class="node s3">S3 Bucket</div>
+        </div>
+        <div class="resource-status" id="resourceStatus"></div>
         <h3>Agent Output:</h3>
         <pre id="agentOutput">Nothing yet.</pre>
     </div>
 
-    <div class="container">
+    <div class="card">
         <h2>Generate Story</h2>
         <label for="storyTaskInput">Task:</label>
         <input type="text" id="storyTaskInput" placeholder="Task name">
@@ -142,144 +103,107 @@
         <label for="storyExecutionInput">Execution (JSON format):</label>
         <textarea id="storyExecutionInput" rows="3" placeholder='{"message":"Deployed 3 resources successfully."}'></textarea>
         <button onclick="generateStory()">Generate Story</button>
-        <button onclick="copyStory()">Copy Final Story</button>
-
+        <button onclick="copyHistory()">Copy Full History</button>
         <h3>Story Output:</h3>
-        <pre id="storyOutput">Nothing yet.</pre>
+        <pre id="storyOutput" class="story-output">Nothing yet.</pre>
     </div>
+</div>
 
-    <div class="container">
-        <h2>Task History</h2>
-        <div id="history"></div>
-    </div>
+<script>
+let history = [];
 
-    <script>
-        const taskQueueEl = document.getElementById("taskQueue");
-        const historyEl = document.getElementById("history");
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
-        async function runAgent() {
-            const taskText = document.getElementById("taskInput").value;
-            if (!taskText) return alert("Please enter a task description.");
+async function runAgent() {
+    const task = document.getElementById("taskInput").value;
+    const speed = parseFloat(document.getElementById("speedRange").value);
+    const voiceNotify = document.getElementById("voiceNotify").checked;
+    const resourceDiv = document.getElementById("resourceStatus");
+    const diagram = document.getElementById("diagram");
+    resourceDiv.innerHTML = "";
 
-            const speed = document.getElementById("speed").value;
-            const voiceNotify = document.getElementById("voiceNotify").checked;
+    const resources = ["Lambda Function", "API Gateway Endpoint", "S3 Bucket"];
+    let executed_resources = [];
 
-            // Clear queue
-            taskQueueEl.innerHTML = "";
-            agentOutput.textContent = "Running...";
+    // Animate Task Queue
+    const queue = document.createElement("div");
+    queue.className = "task-queue";
+    queue.textContent = task;
+    diagram.appendChild(queue);
 
-            // Simulate resource execution
-            const resources = ["Lambda Function", "API Gateway Endpoint", "S3 Bucket"];
-            const executedResources = [];
-            for (let i = 0; i < resources.length; i++) {
-                const resName = resources[i];
-                const resEl = document.createElement("span");
-                resEl.textContent = resName;
-                resEl.className = "resource-status resource-pending";
-                taskQueueEl.appendChild(resEl);
-                await sleep(speed === "fast" ? 100 : speed === "normal" ? 300 : 600);
-                resEl.className = "resource-status resource-success";
-                executedResources.push(resName);
-            }
+    const lambda = diagram.querySelector(".lambda");
+    const api = diagram.querySelector(".api");
+    const s3 = diagram.querySelector(".s3");
 
-            const message = `Deployed ${executedResources.length} resources successfully.`;
+    function drawArrow(from, to) {
+        const arrow = document.createElement("div");
+        arrow.className = "arrow";
+        arrow.style.left = from.offsetLeft + from.offsetWidth/2 + "px";
+        arrow.style.top = from.offsetTop + from.offsetHeight + "px";
+        arrow.style.height = (to.offsetTop - from.offsetTop - from.offsetHeight) + "px";
+        diagram.appendChild(arrow);
+        setTimeout(()=>arrow.remove(), 1000);
+    }
 
-            const result = {
-                task: taskText,
-                reasoning: `Analyzed task: '${taskText}' and created an execution plan.`,
-                infra_plan: {
-                    service: "Lambda + API Gateway",
-                    task_summary: `Scaffolded infrastructure for: ${taskText}`,
-                    resources
-                },
-                execution: {
-                    status: "success",
-                    executed_resources: executedResources,
-                    message
-                }
-            };
+    for(let i=0; i<resources.length; i++){
+        const res = resources[i];
+        const div = document.createElement("div");
+        div.textContent = res + " (Pending)";
+        div.classList.add("resource","pending");
+        resourceDiv.appendChild(div);
 
-            document.getElementById("agentOutput").textContent = JSON.stringify(result, null, 2);
+        if(i===0) drawArrow(lambda, api);
+        if(i===1) drawArrow(api, s3);
 
-            addHistoryCard(taskText, result, executedResources, message);
+        await new Promise(r => setTimeout(r, 500/speed));
+        div.textContent = res + " (Success)";
+        div.classList.remove("pending"); div.classList.add("success");
+        executed_resources.push(res);
 
-            if (voiceNotify) {
-                const utterance = new SpeechSynthesisUtterance("Task completed successfully!");
-                speechSynthesis.speak(utterance);
-            }
+        const burst = document.createElement("div");
+        burst.className = "burst";
+        burst.style.left = div.offsetLeft + "px";
+        burst.style.top = div.offsetTop + "px";
+        resourceDiv.appendChild(burst);
+        setTimeout(()=>burst.remove(),600);
 
-            confettiAnimation();
+        if(voiceNotify) new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg').play();
+    }
+    diagram.removeChild(queue);
+
+    const output = {
+        result: {
+            task: task,
+            reasoning: `Analyzed task: '${task}' and created an execution plan.`,
+            infra_plan: { service: "Lambda + API Gateway", task_summary: task, resources },
+            execution: { status: "success", executed_resources, message: `Deployed ${executed_resources.length} resources successfully.` }
         }
+    };
+    document.getElementById("agentOutput").textContent = JSON.stringify(output, null, 2);
 
-        async function generateStory() {
-            try {
-                const task = document.getElementById("storyTaskInput").value;
-                const infra = JSON.parse(document.getElementById("storyInfraInput").value);
-                const execution = JSON.parse(document.getElementById("storyExecutionInput").value);
+    history.push({ task, infra: {resources}, execution: { message: `Deployed ${executed_resources.length} resources successfully.` } });
+    document.getElementById("storyTaskInput").value = task;
+    document.getElementById("storyInfraInput").value = JSON.stringify({resources}, null, 2);
+    document.getElementById("storyExecutionInput").value = JSON.stringify({ message: `Deployed ${executed_resources.length} resources successfully.` }, null, 2);
+}
 
-                const story = (
-                    `The task '${task}' was executed successfully.\n` +
-                    `Infrastructure used: ${infra.resources.join(", ")}.\n` +
-                    `Execution summary: ${execution.message}.\n` +
-                    "Lambda handled logic, API Gateway exposed the endpoint, and S3 provided storage.\n" +
-                    "This architecture ensures scalability and smooth operations."
-                );
+async function generateStory() {
+    const task = document.getElementById("storyTaskInput").value;
+    const infra = JSON.parse(document.getElementById("storyInfraInput").value);
+    const execution = JSON.parse(document.getElementById("storyExecutionInput").value);
 
-                typeWriter(story, document.getElementById("storyOutput"));
-            } catch (err) {
-                alert("Invalid JSON input for infrastructure or execution.");
-            }
-        }
+    const story = `The task '${task}' was executed successfully.
+Infrastructure used: ${infra.resources.join(", ")}.
+Execution summary: ${execution.message}.
+Lambda handled logic, API Gateway exposed the endpoint, and S3 provided storage.
+This architecture ensures scalability and smooth operations.`;
+    document.getElementById("storyOutput").textContent = story;
+}
 
-        function addHistoryCard(task, result, resources, message) {
-            const card = document.createElement("div");
-            card.className = "task-card success";
-
-            card.innerHTML = `
-                <strong>Task:</strong> ${task} <br>
-                <strong>Resources:</strong> ${resources.map(r => `<span class="resource-status resource-success">${r}</span>`).join(" ")}<br>
-                <strong>Execution:</strong> ${message}<br>
-                <button onclick="toggleJSON(this)">Show/Hide JSON</button>
-                <pre style="display:none;">${JSON.stringify(result, null, 2)}</pre>
-            `;
-
-            historyEl.prepend(card);
-        }
-
-        function toggleJSON(btn) {
-            const pre = btn.nextElementSibling;
-            pre.style.display = pre.style.display === "none" ? "block" : "none";
-        }
-
-        function copyStory() {
-            const storyText = document.getElementById("storyOutput").textContent;
-            navigator.clipboard.writeText(storyText);
-            alert("Story copied to clipboard!");
-        }
-
-        function typeWriter(text, el, i = 0) {
-            el.textContent = "";
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    el.textContent += text[i++];
-                } else clearInterval(interval);
-            }, 20);
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function confettiAnimation() {
-            for (let i = 0; i < 50; i++) {
-                const conf = document.createElement("div");
-                conf.className = "confetti";
-                conf.style.left = Math.random() * window.innerWidth + "px";
-                conf.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
-                document.body.appendChild(conf);
-                setTimeout(() => conf.remove(), 3000);
-            }
-        }
-    </script>
+function copyHistory() {
+    const text = JSON.stringify(history, null, 2);
+    navigator.clipboard.writeText(text).then(()=>alert("History copied to clipboard!"));
+}
+</script>
 </body>
 </html>
