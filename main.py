@@ -9,9 +9,6 @@ import time
 # Initialize FastAPI app
 app = FastAPI()
 
-# Mount static folder if you have CSS/JS
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # Templates folder for HTML
 templates = Jinja2Templates(directory="templates")
 
