@@ -6,41 +6,45 @@
     <title>Nelavista AGENT Demo</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
             color: #333;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
         }
-        h1 {
-            text-align: center;
+        h1, h2, h3 {
             color: #1a73e8;
+            margin-bottom: 10px;
         }
         .container {
-            max-width: 700px;
-            margin: 0 auto;
+            max-width: 750px;
+            margin: 30px auto;
             background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         label {
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
         input, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 5px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+            border-radius: 6px;
             border: 1px solid #ccc;
             box-sizing: border-box;
+            font-family: monospace;
         }
         button {
+            margin-top: 15px;
             background-color: #1a73e8;
             color: #fff;
             border: none;
             padding: 12px 20px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
         }
@@ -49,24 +53,57 @@
         }
         pre {
             background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 6px;
             overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .processing {
+            color: #ff9800;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+        .content {
+            display: none;
+            padding: 10px 0;
+        }
+        .visible {
+            display: block;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <h1>Nelavista AGENT Demo</h1>
     <div class="container">
+        <h1>Nelavista AGENT Demo</h1>
+
+        <!-- Run Task Section -->
         <h2>Run a Task</h2>
         <label for="taskInput">Enter Task Description:</label>
         <textarea id="taskInput" rows="3" placeholder="Describe your task..."></textarea>
         <button onclick="runAgent()">Run Agent</button>
-        <h3>Agent Output:</h3>
+        <div class="output-header">
+            <h3>Agent Output:</h3>
+            <button onclick="copyText('agentOutput')">Copy</button>
+        </div>
         <pre id="agentOutput">Nothing yet.</pre>
+        <span id="agentStatus" class="processing"></span>
 
         <hr>
 
+        <!-- Generate Story Section -->
         <h2>Generate Story</h2>
         <label for="storyTaskInput">Task:</label>
         <input type="text" id="storyTaskInput" placeholder="Task name">
@@ -75,37 +112,89 @@
         <label for="storyExecutionInput">Execution (JSON format):</label>
         <textarea id="storyExecutionInput" rows="3" placeholder='{"message":"Deployed 3 resources successfully."}'></textarea>
         <button onclick="generateStory()">Generate Story</button>
-        <h3>Story Output:</h3>
+        <div class="output-header">
+            <h3>Story Output:</h3>
+            <button onclick="copyText('storyOutput')">Copy</button>
+        </div>
         <pre id="storyOutput">Nothing yet.</pre>
+        <span id="storyStatus" class="processing"></span>
     </div>
 
     <script>
+        // Copy to clipboard
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+        }
+
+        // Typewriter effect for story
+        function typeWriter(text, element) {
+            element.textContent = "";
+            let i = 0;
+            const speed = 20;
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
         async function runAgent() {
             const task = document.getElementById("taskInput").value;
-
-            const response = await fetch("/agent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: task })
-            });
-
-            const data = await response.json();
-            document.getElementById("agentOutput").textContent = JSON.stringify(data, null, 2);
+            if (!task.trim()) {
+                alert("Please enter a task description.");
+                return;
+            }
+            const status = document.getElementById("agentStatus");
+            status.textContent = "Processing...";
+            try {
+                const response = await fetch("/agent", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: task })
+                });
+                const data = await response.json();
+                document.getElementById("agentOutput").textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("agentOutput").textContent = "Error: " + e.message;
+            } finally {
+                status.textContent = "";
+            }
         }
 
         async function generateStory() {
             const task = document.getElementById("storyTaskInput").value;
-            const infra = JSON.parse(document.getElementById("storyInfraInput").value);
-            const execution = JSON.parse(document.getElementById("storyExecutionInput").value);
+            const infraInput = document.getElementById("storyInfraInput").value;
+            const executionInput = document.getElementById("storyExecutionInput").value;
+            const status = document.getElementById("storyStatus");
+            status.textContent = "Generating story...";
 
-            const response = await fetch("/generate_story", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ task, infra, execution })
-            });
+            let infra, execution;
+            try {
+                infra = JSON.parse(infraInput);
+                execution = JSON.parse(executionInput);
+            } catch (e) {
+                alert("Invalid JSON in Infrastructure or Execution input.");
+                status.textContent = "";
+                return;
+            }
 
-            const data = await response.json();
-            document.getElementById("storyOutput").textContent = data.story;
+            try {
+                const response = await fetch("/generate_story", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ task, infra, execution })
+                });
+                const data = await response.json();
+                typeWriter(data.story, document.getElementById("storyOutput"));
+            } catch (e) {
+                document.getElementById("storyOutput").textContent = "Error: " + e.message;
+            } finally {
+                status.textContent = "";
+            }
         }
     </script>
 </body>
